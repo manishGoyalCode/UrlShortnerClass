@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL Shortener</title>
+
+    <style>
+
+        body{
+            font-family:Arial, sans-serif;
+            background:#f5f7fb;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+        }
+
+        .card{
+            background:white;
+            padding:40px;
+            border-radius:10px;
+            box-shadow:0 5px 20px rgba(0,0,0,0.1);
+            text-align:center;
+            width:450px;
+        }
+
+        input{
+            width:100%;
+            padding:12px;
+            font-size:16px;
+            border-radius:6px;
+            border:1px solid #ddd;
+        }
+
+        button{
+            margin-top:15px;
+            width:100%;
+            padding:12px;
+            font-size:16px;
+            background:#4f46e5;
+            color:white;
+            border:none;
+            border-radius:6px;
+            cursor:pointer;
+        }
+
+        button:hover{
+            background:#4338ca;
+        }
+
+        .result{
+            margin-top:25px;
+            padding:10px;
+            background:#f1f5f9;
+            border-radius:6px;
+            display:none;
+        }
+
+        a{
+            color:#2563eb;
+            font-weight:bold;
+            cursor:pointer;
+        }
+
+        .copy-btn{
+            margin-top:10px;
+            background:#10b981;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <h2>URL Shortener</h2>
+
+    <input id="urlInput" placeholder="Paste your long URL here">
+
+    <button onclick="shorten()">Shorten URL</button>
+
+    <div id="resultBox" class="result">
+
+        <p>Your short URL:</p>
+
+        <a id="shortUrl" onclick="openOriginal()"></a>
+
+        <br>
+
+        <button class="copy-btn" onclick="copy()">Copy URL</button>
+
+    </div>
+
+</div>
+
+<script>
+
+    let currentCode = "";
+
+    async function shorten(){
+
+        const url=document.getElementById("urlInput").value;
+
+        const response=await fetch("/url/shorten",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                url:url
+            })
+        });
+
+        const data=await response.json();
+
+        currentCode=data.shortCode;
+
+        const shortUrl=window.location.origin+"/url/"+data.shortCode;
+
+        document.getElementById("shortUrl").innerText=shortUrl;
+
+        document.getElementById("resultBox").style.display="block";
+
+    }
+
+    async function openOriginal(){
+
+        const response=await fetch("/url/"+currentCode);
+
+        const data=await response.json();
+
+        if(data.originalUrl){
+            window.open(data.originalUrl,"_blank");
+        }
+
+    }
+
+    function copy(){
+
+        const text=document.getElementById("shortUrl").innerText;
+
+        navigator.clipboard.writeText(text);
+
+        alert("Copied to clipboard!");
+
+    }
+
+</script>
+
+</body>
+</html>
